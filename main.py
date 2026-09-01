@@ -11,11 +11,9 @@ from telegram.ext import (
 import sqlite3
 from datetime import datetime
 
-# ---------------- تنظیمات ----------------
 BOT_TOKEN = "8965685820:AAGuwWH9XkeIkrydQoJPnrkaUOFK5G9_V58"
 ADMIN_ID = 6078875175
 
-# ---------------- دیتابیس ----------------
 def init_db():
     conn = sqlite3.connect("bot.db")
     c = conn.cursor()
@@ -66,12 +64,10 @@ def block_user(blocker_id, blocked_id):
     conn.commit()
     conn.close()
 
-# ---------------- هندلرها ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     link_code = get_or_create_user(user.id, user.username, user.full_name)
 
-    # اگر کاربر با لینک اومده
     if context.args:
         target_code = context.args[0]
         conn = sqlite3.connect("bot.db")
@@ -93,7 +89,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("لینک نامعتبر است یا نمی‌توانید به خودتان پیام بدهید.")
             return
 
-    # پیام خوش‌آمدگویی
     keyboard = [
         [InlineKeyboardButton("دریافت لینک", callback_data="copy_link")],
         [InlineKeyboardButton("راهنما", callback_data="help")]
@@ -192,7 +187,7 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
-    app.add_handler(MessageHandler(filters.TEXT & \~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
     print("ربات روشن شد...")
     app.run_polling()
