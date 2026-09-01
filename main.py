@@ -65,6 +65,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     link_code = get_or_create_user(user.id, user.username, user.full_name)
 
+    # اگر با لینک اومده باشه
     if context.args:
         target_code = context.args[0]
         conn = sqlite3.connect("bot.db")
@@ -87,20 +88,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("لینک نامعتبر است یا نمی‌توانید به خودتان پیام بدهید.")
             return
 
+    # پیام خوش‌آمدگویی جدید
     bot_username = (await context.bot.get_me()).username
     link = f"https://t.me/{bot_username}?start={link_code}"
 
     keyboard = [
-        [InlineKeyboardButton("لینک من رو کپی کن", callback_data="copy_link")],
+        [InlineKeyboardButton("دریافت لینک", callback_data="copy_link")],
         [InlineKeyboardButton("راهنما", callback_data="help")]
     ]
 
     await update.message.reply_text(
-        f"سلام {user.first_name} 👋\n\n"
-        "این ربات پیام ناشناس است.\n"
-        "لینک اختصاصی خودت رو به بقیه بده تا بتونن برات پیام ناشناس بفرستن.\n\n"
-        f"🔗 لینک اختصاصی تو:\n`{link}`",
-        parse_mode="Markdown",
+        "درود!!\n"
+        "خوش اومدی🥰\n"
+        "برای دریافت لینک ناشناست روی دریافت لینک کلیک کن تا به صورت ناشناس با بقیه صحبت کنی 💘",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
@@ -166,10 +166,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "help":
         await query.edit_message_text(
             "📖 راهنما:\n\n"
-            "۱. لینک اختصاصی خودت رو به بقیه بده\n"
-            "۲. بقیه با لینک وارد ربات می‌شن و بهت پیام ناشناس می‌فرستن\n"
-            "۳. می‌تونی جواب بدی یا بلاک کنی\n\n"
-            "نکته: هویت فرستنده کاملاً مخفی می‌مونه."
+            "۱. روی دکمه دریافت لینک بزن\n"
+            "۲. لینکت رو به بقیه بده\n"
+            "۳. بقیه می‌تونن برات پیام ناشناس بفرستن\n"
+            "۴. می‌تونی جواب بدی یا بلاک کنی"
         )
 
     elif data.startswith("reply_"):
