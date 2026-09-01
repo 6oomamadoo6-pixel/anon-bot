@@ -9,9 +9,7 @@ import string
 BOT_TOKEN = "8965685820:AAGuwWH9XkeIkrydQoJPnrkaUOFK5G9_V58"
 ADMIN_ID = 6078875175
 
-# کانال‌های اجباری
-CHANNEL_1 = "@hidemychatRobot0"
-CHANNEL_2 = "@DoNi0r"
+CHANNEL = "@hidemychatRobot0"
 
 def init_db():
     conn = sqlite3.connect("bot.db")
@@ -47,7 +45,6 @@ def get_or_create_user(user_id, username, full_name):
     link_code = str(user_id)
     anon_code = generate_anon_code()
     
-    # مطمئن شو کد تکراری نباشه
     while True:
         c.execute("SELECT 1 FROM users WHERE anon_code = ?", (anon_code,))
         if not c.fetchone():
@@ -77,26 +74,19 @@ def block_user(blocker_id, blocked_id):
     conn.commit()
     conn.close()
 
-async def is_member(bot, user_id, channel):
+async def is_member(bot, user_id):
     try:
-        member = await bot.get_chat_member(chat_id=channel, user_id=user_id)
+        member = await bot.get_chat_member(chat_id=CHANNEL, user_id=user_id)
         return member.status in [ChatMember.MEMBER, ChatMember.ADMINISTRATOR, ChatMember.OWNER]
     except TelegramError:
         return False
-
-async def check_membership(bot, user_id):
-    m1 = await is_member(bot, user_id, CHANNEL_1)
-    m2 = await is_member(bot, user_id, CHANNEL_2)
-    return m1 and m2
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     link_code, anon_code = get_or_create_user(user.id, user.username, user.full_name)
 
-    # اگر با لینک اومده
     if context.args:
-        # اول چک عضویت
-        if not await check_membership(context.bot, user.id):
+        if not await is_member(context.bot, user.id):
             await send_join_message(update, context)
             return
 
@@ -110,7 +100,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if target and target[0] != user.id:
             context.user_data["target_id"] = target[0]
             await update.message.reply_text(
-                f"شما در حال ارسال پیام ناشناس هستید.\n\nپیام خود را بنویسید:",
+                "شما در حال ارسال پیام ناشناس هستید.\n\nپیام خود را بنویسید:",
                 reply_markup=ForceReply(selective=True)
             )
             return
@@ -118,24 +108,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("لینک نامعتبر است.")
             return
 
-    # چک عضویت
-    if not await check_membership(context.bot, user.id):
+    if not await is_member(context.bot, user.id):
         await send_join_message(update, context)
         return
 
-    # پنل اصلی
     await send_main_panel(update, context)
 
 async def send_join_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("کانال ۱", url="https://t.me/hidemychatRobot0")],
-        [InlineKeyboardButton("کانال ۲", url="https://t.me/DoNi0r")],
+        [InlineKeyboardButton("کانال اجباری", url="https://t.me/hidemychatRobot0")],
         [InlineKeyboardButton("جوین شدم✅", callback_data="check_join")]
     ]
     text = (
         "درود و عرض ادب !\n"
         "خوش اومدی\n\n"
-        "برای ادامه استفاده از ربات زحمت بکش توی دوتا چنل زیر جوین شو"
+        "🥹❤️برای ادامه استفاده از ربات زحمت بکش توی کانال زیر جوین شو"
     )
     if update.message:
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
@@ -163,8 +150,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = update.message.text
 
-    # چک عضویت
-    if not await check_membership(context.bot, user.id):
+    if not await is_member(context.bot, user.id):
         await send_join_message(update, context)
         return
 
@@ -176,7 +162,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data.clear()
             return
 
-        # گرفتن کد ناشناس فرستنده
         conn = sqlite3.connect("bot.db")
         c = conn.cursor()
         c.execute("SELECT anon_code FROM users WHERE user_id = ?", (user.id,))
@@ -220,10 +205,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
 
     if data == "check_join":
-        if await check_membership(context.bot, user_id):
+        if await is_member(context.bot, user_id):
             await send_main_panel(update, context)
         else:
-            await query.answer("هنوز تو هر دو کانال جوین نشدی!", show_alert=True)
+            await query.answer("هنوز عضو همه کانال ها نشدی❌ - گلدن چت", show_alert=True)
             await send_join_message(update, context)
 
     elif data == "copy_link":
