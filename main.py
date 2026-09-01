@@ -1,8 +1,12 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler, CallbackQueryHandler,
-    ContextTypes, filters
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+    filters
 )
 import sqlite3
 from datetime import datetime
@@ -39,8 +43,10 @@ def get_or_create_user(user_id, username, full_name):
         link_code = row[0]
     else:
         link_code = str(user_id)
-        c.execute("INSERT INTO users (user_id, username, full_name, link_code, created_at) VALUES (?, ?, ?, ?, ?)",
-                  (user_id, username, full_name, link_code, datetime.now().isoformat()))
+        c.execute(
+            "INSERT INTO users (user_id, username, full_name, link_code, created_at) VALUES (?, ?, ?, ?, ?)",
+            (user_id, username, full_name, link_code, datetime.now().isoformat())
+        )
         conn.commit()
     conn.close()
     return link_code
@@ -65,7 +71,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     link_code = get_or_create_user(user.id, user.username, user.full_name)
 
-    # اگر با لینک اومده باشه
+    # اگر کاربر با لینک اومده
     if context.args:
         target_code = context.args[0]
         conn = sqlite3.connect("bot.db")
@@ -78,8 +84,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["target_id"] = target[0]
             context.user_data["target_name"] = target[1]
             await update.message.reply_text(
-                f"شما در حال ارسال پیام ناشناس به **{target[1]}** هستید.\n\n"
-                "پیام خود را بنویسید:",
+                f"شما در حال ارسال پیام ناشناس به **{target[1]}** هستید.\n\nپیام خود را بنویسید:",
                 parse_mode="Markdown",
                 reply_markup=ForceReply(selective=True)
             )
@@ -88,10 +93,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("لینک نامعتبر است یا نمی‌توانید به خودتان پیام بدهید.")
             return
 
-    # پیام خوش‌آمدگویی جدید
-    bot_username = (await context.bot.get_me()).username
-    link = f"https://t.me/{bot_username}?start={link_code}"
-
+    # پیام خوش‌آمدگویی
     keyboard = [
         [InlineKeyboardButton("دریافت لینک", callback_data="copy_link")],
         [InlineKeyboardButton("راهنما", callback_data="help")]
@@ -126,8 +128,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.send_message(
                 chat_id=target_id,
-                text=f"📩 **پیام ناشناس جدید**\n\n{text}\n\n"
-                     f"از طرف: ناشناس (آیدی عددی: `{user.id}`)",
+                text=f"📩 **پیام ناشناس جدید**\n\n{text}\n\nاز طرف: ناشناس (آیدی عددی: `{user.id}`)",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
