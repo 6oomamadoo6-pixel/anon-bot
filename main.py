@@ -100,7 +100,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if target and target[0] != user.id:
             context.user_data["target_id"] = target[0]
             await update.message.reply_text(
-                "شما در حال ارسال پیام ناشناس هستید.\n\nپیام خود را بنویسید:",
+                "شما در حال ارسال پیام ناشناس به کاربر مورد نظر هستید.\n\nپیام خود را بنویسید:",
                 reply_markup=ForceReply(selective=True)
             )
             return
@@ -116,7 +116,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_join_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("کانال اجباری", url="https://t.me/hidemychatRobot0")],
+        [InlineKeyboardButton("کانال رسمی گلدن چت", url="https://t.me/hidemychatRobot0")],
         [InlineKeyboardButton("جوین شدم✅", callback_data="check_join")]
     ]
     text = (
@@ -137,9 +137,9 @@ async def send_main_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("راهنما 🤔", callback_data="help")]
     ]
     text = (
-        "درودد مجدد\n"
-        "ممنون که ربات مارو انتخاب کردی\n"
-        "میتونی با پنل شیشه ای زیر از قابلیت های ربات ما استفاده کنی :"
+        " 📬درودد مجدد\n"
+        "...ممنون که ربات مارو انتخاب کردی ربات ما درحال تکمیل هست\n"
+        "میتونی با پنل شیشه ای زیر از قابلیت های ربات ما استفاده کنی👇🏻 :"
     )
     if update.message:
         await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
